@@ -1,0 +1,15 @@
+RewriteEngine On
+
+# Chuyển hướng tất cả request về index.php
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^(.*)$ index.php?url=$1 [QSA,L]
+
+# Tắt hiển thị danh sách thư mục
+Options -Indexes
+
+# Bảo vệ file cấu hình
+<FilesMatch "\.(ini|log|sql|bak|config)$">
+    Order allow,deny
+    Deny from all
+</FilesMatch>
