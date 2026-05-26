@@ -28,6 +28,14 @@ class App
         }
         $this->params = $urlProcessed ? array_values($urlProcessed) : [];
         call_user_func_array([$this->controller, $this->action], $this->params);
+
+        if (isset($url[0])) {
+    $controllerName = ucfirst($url[0]) . 'Controller';
+    if (file_exists('../../app/controllers/' . $controllerName . '.php')) {
+        $this->controller = $controllerName;
+        unset($url[0]);
+    }
+}
     }
     
     public function UrlProcess(){
@@ -35,5 +43,7 @@ class App
             return explode('/', filter_var(trim($_GET['url'], '/')));
         }
     }
+
+    
 }
 ?>
