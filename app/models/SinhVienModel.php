@@ -1,5 +1,4 @@
 <?php
-// app/models/SinhVienModel.php
 
 require_once '../../app/core/Database.php';
 
@@ -11,6 +10,7 @@ class SinhVienModel
     {
         $this->db = new Database();
     }
+    
     
     public function getAll()
     {
@@ -46,4 +46,5 @@ class SinhVienModel
         return $this->db->execute($sql, ['id' => $id]);
     }
 }
+
 ?>
