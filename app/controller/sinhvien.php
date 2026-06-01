@@ -1,25 +1,39 @@
 <?php
 // app/controllers/sinhvien.php
 
-require_once '../../app/core/Controller.php';
-require_once '../../app/middleware/AuthMiddleware.php';
+require_once '../core/Controller.php';
+require_once '../models/SinhVienModel.php';
 
-class sinhvien extends Controller
+class SinhVienController extends Controller
 {
+    private $sinhvienModel;
+    
+    public function __construct()
+    {
+        $this->sinhvienModel = new SinhVienModel();
+    }
+    
+    public function index()
+    {
+        // Lấy danh sách sinh viên
+        $sinhvienList = $this->sinhvienModel->getAll();
+        
+        // Hiển thị view
+        $this->view('sinhvien/index', [
+            'sinhvienList' => $sinhvienList
+        ]);
+    }
+    
     public function dangky()
     {
-        AuthMiddleware::check(); // Kiểm tra đã đăng nhập
-        
-        // Phần code đăng ký như cũ
-        // ... (giữ nguyên code đăng ký của bạn)
+        // Code đăng ký như cũ
+        // ...
     }
     
     public function trangchu()
     {
-        AuthMiddleware::check(); // Kiểm tra đã đăng nhập
-        
-        // Phần code hiển thị thông tin
-        // ... (giữ nguyên code cũ)
+        // Code trang chủ như cũ
+        // ...
     }
 }
 ?>
