@@ -1,9 +1,9 @@
 <?php
 // app/controllers/auth.php
 
-require_once '../../app/core/Controller.php';
-require_once '../../app/models/UserModel.php';
-require_once '../../app/middleware/AuthMiddleware.php';
+require_once '../core/Controller.php';
+require_once '../models/UserModel.php';
+require_once '../middleware/AuthMiddleware.php';
 
 class auth extends Controller
 {

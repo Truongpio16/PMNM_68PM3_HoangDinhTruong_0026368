@@ -12,14 +12,14 @@ class App
         // Xử lý controller
         if (isset($urlProcessed[0])) {
             $controllerName = $urlProcessed[0];
-            if (file_exists('../../app/controllers/' . $controllerName . '.php')) {
+            if (file_exists('../controllers/' . $controllerName . '.php')) {
                 $this->controller = $controllerName;
                 unset($urlProcessed[0]);
             }
         }
         
         // Load controller
-        require_once '../../app/controllers/' . $this->controller . '.php';
+        require_once '../controllers/' . $this->controller . '.php';
         $this->controller = new $this->controller;
         
         // Xử lý action
