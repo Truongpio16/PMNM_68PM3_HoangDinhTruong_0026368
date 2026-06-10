@@ -156,5 +156,18 @@ class SinhVienModel
         $result = $this->db->fetchOne($sql);
         return $result['total'] ?? 0;
     }
+    
+    // Lấy danh sách có phân trang (THÊM MỚI CHO COMMIT 1)
+    public function getPaginated($offset, $limit)
+    {
+        $sql = "SELECT * FROM sinhvien ORDER BY id DESC LIMIT :offset, :limit";
+        return $this->db->fetchAll($sql, ['offset' => (int)$offset, 'limit' => (int)$limit]);
+    }
+    
+    // Lấy tổng số bản ghi (THÊM MỚI CHO COMMIT 1)
+    public function getTotalCount()
+    {
+        return $this->count();
+    }
 }
 ?>

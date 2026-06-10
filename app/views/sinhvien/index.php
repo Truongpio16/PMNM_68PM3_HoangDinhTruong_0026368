@@ -174,6 +174,37 @@
             gap: 8px;
         }
         
+        /* Pagination */
+        .pagination {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+        
+        .page-btn {
+            padding: 8px 14px;
+            background: #e9ecef;
+            color: #1a73e8;
+            text-decoration: none;
+            border-radius: 6px;
+            transition: all 0.2s ease;
+            font-weight: 500;
+        }
+        
+        .page-btn:hover {
+            background: #1a73e8;
+            color: white;
+            transform: translateY(-2px);
+        }
+        
+        .page-btn.active {
+            background: #1a73e8;
+            color: white;
+            box-shadow: 0 2px 8px rgba(26,115,232,0.3);
+        }
+        
         /* Responsive */
         @media (max-width: 768px) {
             .container {
@@ -234,7 +265,7 @@
         <table class="data-table">
             <thead>
                 <tr>
-                    <th>ID</th>
+                    <th>STT</th>
                     <th>MSSV</th>
                     <th>Họ tên</th>
                     <th>Email</th>
@@ -246,28 +277,26 @@
             </thead>
             <tbody>
                 <?php if (!empty($sinhvienList) && count($sinhvienList) > 0): ?>
-                    <?php $stt = 1; ?>
+                    <?php $stt = (($currentPage ?? 1) - 1) * ($limit ?? 5) + 1; ?>
                     <?php foreach ($sinhvienList as $sv): ?>
                         <tr>
-                            <td><?php echo $stt++; ?> </td>
-                            <td><?php echo htmlspecialchars($sv['mssv']); ?> </td>
-                            <td><?php echo htmlspecialchars($sv['hoten']); ?> </td>
-                            <td><?php echo htmlspecialchars($sv['email']); ?> </td>
+                            <td><?php echo $stt++; ?></td>
+                            <td><?php echo htmlspecialchars($sv['mssv']); ?></td>
+                            <td><?php echo htmlspecialchars($sv['hoten']); ?></td>
+                            <td><?php echo htmlspecialchars($sv['email']); ?></td>
                             <td>
                                 <?php 
-                                $genderBadge = '';
                                 if ($sv['gioitinh'] == 'Nam') {
-                                    $genderBadge = '👨 Nam';
+                                    echo '👨 Nam';
                                 } elseif ($sv['gioitinh'] == 'Nữ') {
-                                    $genderBadge = '👩 Nữ';
+                                    echo '👩 Nữ';
                                 } else {
-                                    $genderBadge = '👤 Khác';
+                                    echo '👤 Khác';
                                 }
-                                echo $genderBadge;
                                 ?>
                              </td>
-                            <td><?php echo htmlspecialchars($sv['lop']); ?> </td>
-                            <td><?php echo date('d/m/Y', strtotime($sv['ngaysinh'])); ?> </td>
+                            <td><?php echo htmlspecialchars($sv['lop']); ?></td>
+                            <td><?php echo date('d/m/Y', strtotime($sv['ngaysinh'])); ?></td>
                             <td class="action-buttons">
                                 <a href="<?php echo BASE_URL; ?>sinhvien/edit/<?php echo $sv['id']; ?>" class="btn btn-edit">✏️ Sửa</a>
                                 <a href="<?php echo BASE_URL; ?>sinhvien/delete/<?php echo $sv['id']; ?>" 
@@ -289,9 +318,32 @@
             </tbody>
         </table>
         
+        <!-- Phân trang -->
+        <?php if (isset($totalPages) && $totalPages > 1): ?>
+        <div class="pagination">
+            <?php if ($currentPage > 1): ?>
+                <a href="<?php echo BASE_URL; ?>sinhvien/index?page=<?php echo $currentPage - 1; ?>" class="page-btn">« Trước</a>
+            <?php endif; ?>
+            
+            <?php for ($i = 1; $i <= $totalPages; $i++): ?>
+                <a href="<?php echo BASE_URL; ?>sinhvien/index?page=<?php echo $i; ?>" 
+                   class="page-btn <?php echo $i == $currentPage ? 'active' : ''; ?>">
+                    <?php echo $i; ?>
+                </a>
+            <?php endfor; ?>
+            
+            <?php if ($currentPage < $totalPages): ?>
+                <a href="<?php echo BASE_URL; ?>sinhvien/index?page=<?php echo $currentPage + 1; ?>" class="page-btn">Sau »</a>
+            <?php endif; ?>
+        </div>
+        <?php endif; ?>
+        
         <!-- Thống kê -->
         <div class="stats">
-            📊 Tổng số sinh viên: <strong><?php echo count($sinhvienList ?? []); ?></strong>
+            📊 Tổng số sinh viên: <strong><?php echo $total ?? count($sinhvienList ?? []); ?></strong>
+            <?php if (isset($totalPages)): ?>
+                | Trang <strong><?php echo $currentPage; ?></strong> / <strong><?php echo $totalPages; ?></strong>
+            <?php endif; ?>
         </div>
     </div>
 </body>

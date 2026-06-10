@@ -13,16 +13,82 @@ class SinhVienController extends Controller
         $this->sinhvienModel = new SinhVienModel();
     }
     
-    // Hiển thị danh sách sinh viên
+    // ==================== COMMIT 1: PAGING ====================
+    // Hiển thị danh sách sinh viên có phân trang
     public function index()
     {
-        $sinhvienList = $this->sinhvienModel->getAll();
+        // Phân trang
+        $limit = 5; // Số dòng mỗi trang
+        $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
+        $offset = ($page - 1) * $limit;
+        
+        // Lấy tổng số bản ghi và danh sách theo trang
+        $total = $this->sinhvienModel->getTotalCount();
+        $totalPages = ceil($total / $limit);
+        $sinhvienList = $this->sinhvienModel->getPaginated($offset, $limit);
         
         $this->render('sinhvien/index', [
-            'sinhvienList' => $sinhvienList
+            'sinhvienList' => $sinhvienList,
+            'currentPage' => $page,
+            'totalPages' => $totalPages,
+            'total' => $total
         ]);
     }
     
+    // ==================== COMMIT 2: UPDATE ====================
+    // Hiển thị form sửa sinh viên
+    public function edit($id)
+    {
+        $sinhvien = $this->sinhvienModel->getById($id);
+        if (!$sinhvien) {
+            $_SESSION['error'] = 'Không tìm thấy sinh viên';
+            $this->redirect('sinhvien/index');
+        }
+        
+        $this->render('sinhvien/edit', ['sinhvien' => $sinhvien]);
+    }
+    
+    // Xử lý cập nhật sinh viên
+    public function update($id)
+    {
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $data = [
+                'mssv' => $_POST['mssv'],
+                'hoten' => $_POST['hoten'],
+                'email' => $_POST['email'],
+                'gioitinh' => $_POST['gioitinh'],
+                'diachi' => $_POST['diachi'],
+                'ngaysinh' => $_POST['ngaysinh'],
+                'lop' => $_POST['lop']
+            ];
+            
+            $result = $this->sinhvienModel->update($id, $data);
+            
+            if ($result['success']) {
+                $_SESSION['message'] = 'Cập nhật sinh viên thành công!';
+            } else {
+                $_SESSION['error'] = $result['error'];
+            }
+        }
+        $this->redirect('sinhvien/index');
+    }
+    
+    // ==================== COMMIT 3: DELETE ====================
+    // Xóa sinh viên
+    public function delete($id)
+    {
+        $result = $this->sinhvienModel->delete($id);
+        
+        if ($result['success']) {
+            $_SESSION['message'] = 'Xóa sinh viên thành công!';
+        } else {
+            $_SESSION['error'] = $result['error'];
+        }
+        
+        $this->redirect('sinhvien/index');
+    }
+    
+    // ==================== CREATE (Thêm mới) ====================
     // Hiển thị form đăng ký (thêm mới)
     public function dangky()
     {
@@ -57,11 +123,13 @@ class SinhVienController extends Controller
             } else {
                 if (!checkdate($dateParts[1], $dateParts[0], $dateParts[2])) {
                     $errors['ngaysinh'] = "Ngày sinh không hợp lệ";
+                } else {
+                    // Chuyển đổi ngày sinh sang Y-m-d
+                    $ngaysinh = $dateParts[2] . '-' . $dateParts[1] . '-' . $dateParts[0];
                 }
             }
             
             if (empty($errors)) {
-                // Lưu vào database
                 $data = [
                     'mssv' => $mssv,
                     'hoten' => $hoten,
@@ -72,11 +140,13 @@ class SinhVienController extends Controller
                     'lop' => $lop
                 ];
                 
-                if ($this->sinhvienModel->create($data)) {
-                    $_SESSION['message'] = 'Đăng ký thành công!';
-                    $this->redirect('sinhvientrongchu');
+                $result = $this->sinhvienModel->create($data);
+                
+                if ($result['success']) {
+                    $_SESSION['message'] = 'Thêm sinh viên thành công!';
+                    $this->redirect('sinhvien/index');
                 } else {
-                    $errors['database'] = 'Lỗi khi lưu dữ liệu';
+                    $errors['database'] = $result['error'];
                 }
             }
         }
@@ -85,6 +155,32 @@ class SinhVienController extends Controller
             'errors' => $errors,
             'data' => $oldData
         ]);
+    }
+    
+    // Xử lý thêm mới (có thể gọi từ dangky hoặc dùng riêng)
+    public function store()
+    {
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $data = [
+                'mssv' => $_POST['mssv'],
+                'hoten' => $_POST['hoten'],
+                'email' => $_POST['email'],
+                'gioitinh' => $_POST['gioitinh'],
+                'diachi' => $_POST['diachi'],
+                'ngaysinh' => $_POST['ngaysinh'],
+                'lop' => $_POST['lop']
+            ];
+            
+            $result = $this->sinhvienModel->create($data);
+            
+            if ($result['success']) {
+                $_SESSION['message'] = 'Thêm sinh viên thành công!';
+                $this->redirect('sinhvien/index');
+            } else {
+                $_SESSION['error'] = $result['error'];
+                $this->redirect('sinhvien/dangky');
+            }
+        }
     }
     
     // Hiển thị thông tin sau khi đăng ký
@@ -98,30 +194,5 @@ class SinhVienController extends Controller
             'sinhvien' => $_SESSION['sinhvien']
         ]);
     }
-    public function store()
-{
-    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-        $data = [
-            'mssv' => $_POST['mssv'],
-            'hoten' => $_POST['hoten'],
-            'email' => $_POST['email'],
-            'gioitinh' => $_POST['gioitinh'],
-            'diachi' => $_POST['diachi'],
-            'ngaysinh' => $_POST['ngaysinh'],
-            'lop' => $_POST['lop']
-        ];
-        
-        $result = $this->sinhvienModel->create($data);
-        
-        if ($result['success']) {
-            $_SESSION['message'] = 'Thêm sinh viên thành công!';
-            $this->redirect('sinhvien/index');
-        } else {
-            $_SESSION['error'] = $result['error'];
-            $this->redirect('sinhvien/dangky');
-        }
-    }
-}
-
 }
 ?>
