@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Danh sách sinh viên</title>
+    <title>Danh sách sinh viên - Card View</title>
     <style>
         * {
             margin: 0;
@@ -12,339 +12,375 @@
         }
         
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: 'Poppins', 'Segoe UI', sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
-            padding: 20px;
+            padding: 30px;
         }
         
         .container {
             max-width: 1400px;
             margin: auto;
-            background: white;
-            padding: 25px;
-            border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
         }
         
-        h2 {
+        /* Header */
+        .header {
             text-align: center;
-            color: #1a73e8;
-            margin-bottom: 25px;
-            font-size: 28px;
+            margin-bottom: 30px;
         }
         
-        /* Thông báo */
-        .alert {
-            padding: 12px 20px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            animation: slideDown 0.3s ease;
+        .header h1 {
+            font-size: 36px;
+            color: white;
+            text-shadow: 2px 2px 10px rgba(0,0,0,0.2);
         }
         
-        @keyframes slideDown {
-            from {
-                opacity: 0;
-                transform: translateY(-20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+        .header p {
+            color: rgba(255,255,255,0.9);
+            margin-top: 10px;
         }
         
-        .alert-success {
-            background: #d4edda;
-            color: #155724;
-            border: 1px solid #c3e6cb;
+        /* Stats cards */
+        .stats-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
         }
         
-        .alert-error {
-            background: #f8d7da;
-            color: #721c24;
-            border: 1px solid #f5c6cb;
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+            transition: transform 0.3s;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .stat-card .number {
+            font-size: 32px;
+            font-weight: bold;
+            color: #667eea;
+        }
+        
+        .stat-card .label {
+            color: #666;
+            margin-top: 5px;
         }
         
         /* Button group */
         .btn-group {
             display: flex;
-            gap: 10px;
-            margin-bottom: 25px;
+            gap: 15px;
+            margin-bottom: 30px;
+            justify-content: center;
             flex-wrap: wrap;
         }
         
         .btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 30px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
             display: inline-flex;
             align-items: center;
             gap: 8px;
-            padding: 10px 20px;
+            transition: all 0.3s;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea, #764ba2);
             color: white;
-            text-decoration: none;
-            border-radius: 8px;
-            transition: all 0.3s ease;
-            font-weight: 500;
-            border: none;
-            cursor: pointer;
+        }
+        
+        .btn-success {
+            background: linear-gradient(135deg, #11998e, #38ef7d);
+            color: white;
         }
         
         .btn:hover {
             transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
         }
         
-        .btn-add {
-            background: #28a745;
+        /* Card grid */
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 25px;
+            margin-bottom: 30px;
         }
         
-        .btn-add:hover {
-            background: #218838;
+        .student-card {
+            background: white;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            transition: all 0.3s;
         }
         
-        .btn-home {
-            background: #1a73e8;
+        .student-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
         }
         
-        .btn-home:hover {
-            background: #1557b0;
+        .card-header {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            padding: 20px;
+            color: white;
+            position: relative;
         }
         
-        .btn-edit {
+        .card-header .mssv {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+        
+        .card-header .name {
+            font-size: 20px;
+            font-weight: bold;
+            margin-top: 5px;
+        }
+        
+        .card-body {
+            padding: 20px;
+        }
+        
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        
+        .info-label {
+            font-weight: 600;
+            color: #666;
+        }
+        
+        .info-value {
+            color: #333;
+        }
+        
+        .gender-badge {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+        }
+        
+        .gender-male {
+            background: #d4f1f9;
+            color: #007bff;
+        }
+        
+        .gender-female {
+            background: #fce4ec;
+            color: #e91e63;
+        }
+        
+        .card-footer {
+            padding: 15px 20px;
+            background: #f8f9fa;
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+        }
+        
+        .action-btn {
+            padding: 6px 15px;
+            border-radius: 20px;
+            text-decoration: none;
+            font-size: 12px;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+        
+        .action-edit {
             background: #ffc107;
             color: #333;
-            padding: 5px 12px;
-            font-size: 13px;
         }
         
-        .btn-edit:hover {
-            background: #e0a800;
-        }
-        
-        .btn-delete {
+        .action-delete {
             background: #dc3545;
-            padding: 5px 12px;
-            font-size: 13px;
-        }
-        
-        .btn-delete:hover {
-            background: #c82333;
-        }
-        
-        /* Bảng dữ liệu */
-        .data-table {
-            width: 100%;
-            border-collapse: collapse;
-            overflow-x: auto;
-            display: block;
-        }
-        
-        .data-table th,
-        .data-table td {
-            padding: 12px 15px;
-            text-align: left;
-            border-bottom: 1px solid #e0e0e0;
-        }
-        
-        .data-table th {
-            background: linear-gradient(135deg, #1a73e8 0%, #0d47a1 100%);
             color: white;
-            font-weight: 600;
-            position: sticky;
-            top: 0;
         }
         
-        .data-table tr:hover {
-            background: #f5f5f5;
-            transition: background 0.2s ease;
-        }
-        
-        .data-table td {
-            color: #333;
-        }
-        
-        .empty-row td {
+        .empty-state {
             text-align: center;
-            padding: 40px;
-            color: #999;
-            font-style: italic;
+            padding: 60px;
+            background: white;
+            border-radius: 20px;
         }
         
-        /* Action buttons */
-        .action-buttons {
-            display: flex;
-            gap: 8px;
+        .empty-state .icon {
+            font-size: 64px;
+            margin-bottom: 20px;
         }
         
         /* Pagination */
         .pagination {
             display: flex;
             justify-content: center;
-            gap: 8px;
-            margin: 20px 0;
+            gap: 10px;
             flex-wrap: wrap;
         }
         
-        .page-btn {
-            padding: 8px 14px;
-            background: #e9ecef;
-            color: #1a73e8;
+        .page-link {
+            padding: 10px 16px;
+            background: white;
+            border-radius: 10px;
             text-decoration: none;
-            border-radius: 6px;
-            transition: all 0.2s ease;
+            color: #667eea;
             font-weight: 500;
+            transition: all 0.2s;
         }
         
-        .page-btn:hover {
-            background: #1a73e8;
+        .page-link:hover, .page-link.active {
+            background: linear-gradient(135deg, #667eea, #764ba2);
             color: white;
-            transform: translateY(-2px);
         }
         
-        .page-btn.active {
-            background: #1a73e8;
-            color: white;
-            box-shadow: 0 2px 8px rgba(26,115,232,0.3);
+        /* Alert */
+        .alert {
+            padding: 15px 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            animation: slideDown 0.3s;
         }
         
-        /* Responsive */
-        @media (max-width: 768px) {
-            .container {
-                padding: 15px;
-            }
-            
-            .data-table th,
-            .data-table td {
-                padding: 8px 10px;
-                font-size: 12px;
-            }
-            
-            .btn {
-                padding: 8px 15px;
-                font-size: 12px;
-            }
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
         }
         
-        /* Thống kê */
-        .stats {
-            margin-top: 20px;
-            padding-top: 15px;
-            border-top: 1px solid #e0e0e0;
-            text-align: right;
-            color: #666;
-            font-size: 14px;
+        .alert-error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h2>📋 DANH SÁCH SINH VIÊN</h2>
+        <div class="header">
+            <h1>🎓 Quản lý Sinh viên</h1>
+            <p>Hệ thống quản lý sinh viên hiện đại</p>
+        </div>
         
-        <!-- Hiển thị thông báo -->
+        <!-- Thông báo -->
         <?php if (isset($_SESSION['message'])): ?>
-            <div class="alert alert-success">
-                ✅ <?php echo $_SESSION['message']; unset($_SESSION['message']); ?>
-            </div>
+            <div class="alert alert-success">✅ <?php echo $_SESSION['message']; unset($_SESSION['message']); ?></div>
         <?php endif; ?>
-        
         <?php if (isset($_SESSION['error'])): ?>
-            <div class="alert alert-error">
-                ❌ <?php echo $_SESSION['error']; unset($_SESSION['error']); ?>
-            </div>
-        <?php endif; ?>
-        
-        <!-- Button group -->
-        <div class="btn-group">
-            <a href="<?php echo BASE_URL; ?>sinhvien/dangky" class="btn btn-add">
-                ➕ Thêm sinh viên
-            </a>
-            <a href="<?php echo BASE_URL; ?>home/index" class="btn btn-home">
-                🏠 Về trang chủ
-            </a>
-        </div>
-        
-        <!-- Bảng dữ liệu -->
-        <table class="data-table">
-            <thead>
-                <tr>
-                    <th>STT</th>
-                    <th>MSSV</th>
-                    <th>Họ tên</th>
-                    <th>Email</th>
-                    <th>Giới tính</th>
-                    <th>Lớp</th>
-                    <th>Ngày sinh</th>
-                    <th>Thao tác</th>
-                </tr>
-            </thead>
-            <tbody>
-                <?php if (!empty($sinhvienList) && count($sinhvienList) > 0): ?>
-                    <?php $stt = (($currentPage ?? 1) - 1) * ($limit ?? 5) + 1; ?>
-                    <?php foreach ($sinhvienList as $sv): ?>
-                        <tr>
-                            <td><?php echo $stt++; ?></td>
-                            <td><?php echo htmlspecialchars($sv['mssv']); ?></td>
-                            <td><?php echo htmlspecialchars($sv['hoten']); ?></td>
-                            <td><?php echo htmlspecialchars($sv['email']); ?></td>
-                            <td>
-                                <?php 
-                                if ($sv['gioitinh'] == 'Nam') {
-                                    echo '👨 Nam';
-                                } elseif ($sv['gioitinh'] == 'Nữ') {
-                                    echo '👩 Nữ';
-                                } else {
-                                    echo '👤 Khác';
-                                }
-                                ?>
-                             </td>
-                            <td><?php echo htmlspecialchars($sv['lop']); ?></td>
-                            <td><?php echo date('d/m/Y', strtotime($sv['ngaysinh'])); ?></td>
-                            <td class="action-buttons">
-                                <a href="<?php echo BASE_URL; ?>sinhvien/edit/<?php echo $sv['id']; ?>" class="btn btn-edit">✏️ Sửa</a>
-                                <a href="<?php echo BASE_URL; ?>sinhvien/delete/<?php echo $sv['id']; ?>" 
-                                   class="btn btn-delete"
-                                   onclick="return confirm('Bạn có chắc chắn muốn xóa sinh viên <?php echo htmlspecialchars($sv['hoten']); ?>?')">
-                                    🗑️ Xóa
-                                </a>
-                            </td>
-                        </tr>
-                    <?php endforeach; ?>
-                <?php else: ?>
-                    <tr class="empty-row">
-                        <td colspan="8">
-                            📭 Chưa có dữ liệu sinh viên. 
-                            <a href="<?php echo BASE_URL; ?>sinhvien/dangky" style="color: #1a73e8;">Thêm sinh viên mới</a>
-                         </td>
-                    </tr>
-                <?php endif; ?>
-            </tbody>
-        </table>
-        
-        <!-- Phân trang -->
-        <?php if (isset($totalPages) && $totalPages > 1): ?>
-        <div class="pagination">
-            <?php if ($currentPage > 1): ?>
-                <a href="<?php echo BASE_URL; ?>sinhvien/index?page=<?php echo $currentPage - 1; ?>" class="page-btn">« Trước</a>
-            <?php endif; ?>
-            
-            <?php for ($i = 1; $i <= $totalPages; $i++): ?>
-                <a href="<?php echo BASE_URL; ?>sinhvien/index?page=<?php echo $i; ?>" 
-                   class="page-btn <?php echo $i == $currentPage ? 'active' : ''; ?>">
-                    <?php echo $i; ?>
-                </a>
-            <?php endfor; ?>
-            
-            <?php if ($currentPage < $totalPages): ?>
-                <a href="<?php echo BASE_URL; ?>sinhvien/index?page=<?php echo $currentPage + 1; ?>" class="page-btn">Sau »</a>
-            <?php endif; ?>
-        </div>
+            <div class="alert alert-error">❌ <?php echo $_SESSION['error']; unset($_SESSION['error']); ?></div>
         <?php endif; ?>
         
         <!-- Thống kê -->
-        <div class="stats">
-            📊 Tổng số sinh viên: <strong><?php echo $total ?? count($sinhvienList ?? []); ?></strong>
-            <?php if (isset($totalPages)): ?>
-                | Trang <strong><?php echo $currentPage; ?></strong> / <strong><?php echo $totalPages; ?></strong>
-            <?php endif; ?>
+        <div class="stats-cards">
+            <div class="stat-card">
+                <div class="number"><?php echo $total ?? 0; ?></div>
+                <div class="label">Tổng số sinh viên</div>
+            </div>
+            <div class="stat-card">
+                <div class="number"><?php echo $totalPages ?? 1; ?></div>
+                <div class="label">Tổng số trang</div>
+            </div>
+            <div class="stat-card">
+                <div class="number"><?php echo $limit ?? 5; ?></div>
+                <div class="label">Sinh viên/trang</div>
+            </div>
         </div>
+        
+        <!-- Button group -->
+        <div class="btn-group">
+            <a href="<?php echo BASE_URL; ?>sinhvien/dangky" class="btn btn-success">➕ Thêm sinh viên</a>
+            <a href="<?php echo BASE_URL; ?>home/index" class="btn btn-primary">🏠 Về trang chủ</a>
+        </div>
+        
+        <!-- Card grid -->
+        <?php if (!empty($sinhvienList)): ?>
+            <div class="card-grid">
+                <?php foreach ($sinhvienList as $sv): ?>
+                    <div class="student-card">
+                        <div class="card-header">
+                            <div class="mssv">📝 <?php echo htmlspecialchars($sv['mssv']); ?></div>
+                            <div class="name"><?php echo htmlspecialchars($sv['hoten']); ?></div>
+                        </div>
+                        <div class="card-body">
+                            <div class="info-row">
+                                <span class="info-label">📧 Email</span>
+                                <span class="info-value"><?php echo htmlspecialchars($sv['email']); ?></span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-label">⚥ Giới tính</span>
+                                <span class="info-value">
+                                    <span class="gender-badge <?php echo $sv['gioitinh'] == 'Nam' ? 'gender-male' : 'gender-female'; ?>">
+                                        <?php echo $sv['gioitinh'] == 'Nam' ? '👨 Nam' : ($sv['gioitinh'] == 'Nữ' ? '👩 Nữ' : '👤 Khác'); ?>
+                                    </span>
+                                </span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-label">📚 Lớp</span>
+                                <span class="info-value"><?php echo htmlspecialchars($sv['lop']); ?></span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-label">🎂 Ngày sinh</span>
+                                <span class="info-value"><?php echo date('d/m/Y', strtotime($sv['ngaysinh'])); ?></span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-label">📍 Địa chỉ</span>
+                                <span class="info-value"><?php echo htmlspecialchars($sv['diachi']); ?></span>
+                            </div>
+                        </div>
+                        <div class="card-footer">
+                            <a href="<?php echo BASE_URL; ?>sinhvien/edit/<?php echo $sv['id']; ?>" class="action-btn action-edit">✏️ Sửa</a>
+                            <a href="<?php echo BASE_URL; ?>sinhvien/delete/<?php echo $sv['id']; ?>" 
+                               class="action-btn action-delete"
+                               onclick="return confirm('Xóa <?php echo htmlspecialchars($sv['hoten']); ?>?')">🗑️ Xóa</a>
+                        </div>
+                    </div>
+                <?php endforeach; ?>
+            </div>
+        <?php else: ?>
+            <div class="empty-state">
+                <div class="icon">📭</div>
+                <h3>Chưa có dữ liệu sinh viên</h3>
+                <p>Hãy thêm sinh viên đầu tiên!</p>
+                <a href="<?php echo BASE_URL; ?>sinhvien/dangky" class="btn btn-success" style="margin-top: 20px;">➕ Thêm sinh viên</a>
+            </div>
+        <?php endif; ?>
+        
+        <!-- Pagination -->
+        <?php if (isset($totalPages) && $totalPages > 1): ?>
+            <div class="pagination">
+                <?php if ($currentPage > 1): ?>
+                    <a href="<?php echo BASE_URL; ?>sinhvien/index?page=<?php echo $currentPage - 1; ?>" class="page-link">«</a>
+                <?php endif; ?>
+                
+                <?php for ($i = 1; $i <= $totalPages; $i++): ?>
+                    <a href="<?php echo BASE_URL; ?>sinhvien/index?page=<?php echo $i; ?>" 
+                       class="page-link <?php echo $i == $currentPage ? 'active' : ''; ?>">
+                        <?php echo $i; ?>
+                    </a>
+                <?php endfor; ?>
+                
+                <?php if ($currentPage < $totalPages): ?>
+                    <a href="<?php echo BASE_URL; ?>sinhvien/index?page=<?php echo $currentPage + 1; ?>" class="page-link">»</a>
+                <?php endif; ?>
+            </div>
+        <?php endif; ?>
     </div>
 </body>
 </html>
