@@ -12,17 +12,23 @@ class SinhVienModel
         $this->db = new Database();
     }
     
-    // Lấy tất cả sinh viên
+    // Lấy tất cả sinh viên (kèm tên lớp)
     public function getAll()
     {
-        $sql = "SELECT * FROM sinhvien ORDER BY id DESC";
+        $sql = "SELECT sv.*, lh.tenlop as tenlop 
+                FROM sinhvien sv 
+                LEFT JOIN lophoc lh ON sv.malop = lh.malop 
+                ORDER BY sv.id DESC";
         return $this->db->fetchAll($sql);
     }
     
-    // Lấy sinh viên theo ID
+    // Lấy sinh viên theo ID (kèm tên lớp)
     public function getById($id)
     {
-        $sql = "SELECT * FROM sinhvien WHERE id = :id";
+        $sql = "SELECT sv.*, lh.tenlop as tenlop 
+                FROM sinhvien sv 
+                LEFT JOIN lophoc lh ON sv.malop = lh.malop 
+                WHERE sv.id = :id";
         return $this->db->fetchOne($sql, ['id' => $id]);
     }
     
@@ -65,7 +71,7 @@ class SinhVienModel
         return $ngaysinh;
     }
     
-    // Thêm sinh viên (có validation)
+    // Thêm sinh viên (có validation, dùng malop thay vì lop)
     public function create($data)
     {
         // Validation dữ liệu
@@ -84,8 +90,9 @@ class SinhVienModel
         // Chuyển đổi ngày sinh sang định dạng database
         $data['ngaysinh'] = $this->convertNgaySinh($data['ngaysinh']);
         
-        $sql = "INSERT INTO sinhvien (mssv, hoten, email, gioitinh, diachi, ngaysinh, lop) 
-                VALUES (:mssv, :hoten, :email, :gioitinh, :diachi, :ngaysinh, :lop)";
+        // SỬA: Dùng malop thay vì lop
+        $sql = "INSERT INTO sinhvien (mssv, hoten, email, gioitinh, diachi, ngaysinh, malop) 
+                VALUES (:mssv, :hoten, :email, :gioitinh, :diachi, :ngaysinh, :malop)";
         
         $result = $this->db->execute($sql, $data);
         
@@ -116,8 +123,9 @@ class SinhVienModel
             $data['ngaysinh'] = $this->convertNgaySinh($data['ngaysinh']);
         }
         
+        // SỬA: Dùng malop thay vì lop
         $sql = "UPDATE sinhvien SET mssv=:mssv, hoten=:hoten, email=:email, 
-                gioitinh=:gioitinh, diachi=:diachi, ngaysinh=:ngaysinh, lop=:lop 
+                gioitinh=:gioitinh, diachi=:diachi, ngaysinh=:ngaysinh, malop=:malop 
                 WHERE id=:id";
         $data['id'] = $id;
         
@@ -141,10 +149,14 @@ class SinhVienModel
         return ['success' => false, 'error' => 'Lỗi khi xóa sinh viên'];
     }
     
-    // Tìm kiếm sinh viên theo MSSV hoặc Họ tên
+    // Tìm kiếm sinh viên theo MSSV, Họ tên hoặc Mã lớp
     public function search($keyword)
     {
-        $sql = "SELECT * FROM sinhvien WHERE mssv LIKE :keyword OR hoten LIKE :keyword ORDER BY id DESC";
+        $sql = "SELECT sv.*, lh.tenlop as tenlop 
+                FROM sinhvien sv 
+                LEFT JOIN lophoc lh ON sv.malop = lh.malop 
+                WHERE sv.mssv LIKE :keyword OR sv.hoten LIKE :keyword OR sv.malop LIKE :keyword 
+                ORDER BY sv.id DESC";
         $keyword = "%{$keyword}%";
         return $this->db->fetchAll($sql, ['keyword' => $keyword]);
     }
@@ -157,17 +169,32 @@ class SinhVienModel
         return $result['total'] ?? 0;
     }
     
-    // Lấy danh sách có phân trang (THÊM MỚI CHO COMMIT 1)
+    // Lấy danh sách có phân trang (kèm tên lớp)
     public function getPaginated($offset, $limit)
     {
-        $sql = "SELECT * FROM sinhvien ORDER BY id DESC LIMIT :offset, :limit";
+        $sql = "SELECT sv.*, lh.tenlop as tenlop 
+                FROM sinhvien sv 
+                LEFT JOIN lophoc lh ON sv.malop = lh.malop 
+                ORDER BY sv.id DESC 
+                LIMIT :offset, :limit";
         return $this->db->fetchAll($sql, ['offset' => (int)$offset, 'limit' => (int)$limit]);
     }
     
-    // Lấy tổng số bản ghi (THÊM MỚI CHO COMMIT 1)
+    // Lấy tổng số bản ghi
     public function getTotalCount()
     {
         return $this->count();
+    }
+    
+    // Lấy danh sách sinh viên theo mã lớp
+    public function getByMalop($malop)
+    {
+        $sql = "SELECT sv.*, lh.tenlop as tenlop 
+                FROM sinhvien sv 
+                LEFT JOIN lophoc lh ON sv.malop = lh.malop 
+                WHERE sv.malop = :malop 
+                ORDER BY sv.id DESC";
+        return $this->db->fetchAll($sql, ['malop' => $malop]);
     }
 }
 ?>

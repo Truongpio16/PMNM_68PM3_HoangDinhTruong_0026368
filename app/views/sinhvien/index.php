@@ -333,7 +333,16 @@
                             </div>
                             <div class="info-row">
                                 <span class="info-label">📚 Lớp</span>
-                                <span class="info-value"><?php echo htmlspecialchars($sv['lop']); ?></span>
+                                <span class="info-value">
+                                    <?php 
+                                    // SỬA: Hiển thị tên lớp (tenlop) thay vì mã lớp
+                                    if (!empty($sv['tenlop'])) {
+                                        echo htmlspecialchars($sv['malop'] . ' - ' . $sv['tenlop']);
+                                    } else {
+                                        echo htmlspecialchars($sv['malop'] ?? 'Chưa có lớp');
+                                    }
+                                    ?>
+                                </span>
                             </div>
                             <div class="info-row">
                                 <span class="info-label">🎂 Ngày sinh</span>
