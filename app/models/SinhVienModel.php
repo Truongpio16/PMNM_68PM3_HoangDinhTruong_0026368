@@ -32,22 +32,21 @@ class SinhVienModel
         return $this->db->fetchOne($sql, ['id' => $id]);
     }
     
-    // Validate MSSV (bắt đầu bằng 0, kết thúc bằng 68)
+    // Validate MSSV
     public function validateMSSV($mssv)
     {
         return preg_match('/^0.*68$/', $mssv);
     }
     
-    // Validate Email (đuôi @st.huce.edu.vn)
+    // Validate Email
     public function validateEmail($email)
     {
         return preg_match('/@st\.huce\.edu\.vn$/', $email);
     }
     
-    // Validate ngày sinh (định dạng dd/mm/yyyy hoặc Y-m-d)
+    // Validate ngày sinh
     public function validateNgaySinh($ngaysinh)
     {
-        // Nếu là định dạng dd/mm/yyyy
         if (strpos($ngaysinh, '/') !== false) {
             $dateParts = explode('/', $ngaysinh);
             if (count($dateParts) == 3) {
@@ -55,13 +54,11 @@ class SinhVienModel
             }
             return false;
         }
-        
-        // Nếu là định dạng Y-m-d (từ input date)
         $timestamp = strtotime($ngaysinh);
         return $timestamp !== false;
     }
     
-    // Chuyển đổi định dạng ngày sinh sang Y-m-d cho database
+    // Chuyển đổi định dạng ngày sinh
     public function convertNgaySinh($ngaysinh)
     {
         if (strpos($ngaysinh, '/') !== false) {
@@ -71,10 +68,9 @@ class SinhVienModel
         return $ngaysinh;
     }
     
-    // Thêm sinh viên (có validation, dùng malop thay vì lop)
+    // Thêm sinh viên
     public function create($data)
     {
-        // Validation dữ liệu
         if (!$this->validateMSSV($data['mssv'])) {
             return ['success' => false, 'error' => 'MSSV phải bắt đầu bằng 0 và kết thúc bằng 68'];
         }
@@ -87,10 +83,8 @@ class SinhVienModel
             return ['success' => false, 'error' => 'Ngày sinh không hợp lệ'];
         }
         
-        // Chuyển đổi ngày sinh sang định dạng database
         $data['ngaysinh'] = $this->convertNgaySinh($data['ngaysinh']);
         
-        // SỬA: Dùng malop thay vì lop
         $sql = "INSERT INTO sinhvien (mssv, hoten, email, gioitinh, diachi, ngaysinh, malop) 
                 VALUES (:mssv, :hoten, :email, :gioitinh, :diachi, :ngaysinh, :malop)";
         
@@ -105,7 +99,6 @@ class SinhVienModel
     // Cập nhật sinh viên
     public function update($id, $data)
     {
-        // Validation dữ liệu
         if (!$this->validateMSSV($data['mssv'])) {
             return ['success' => false, 'error' => 'MSSV phải bắt đầu bằng 0 và kết thúc bằng 68'];
         }
@@ -118,12 +111,10 @@ class SinhVienModel
             return ['success' => false, 'error' => 'Ngày sinh không hợp lệ'];
         }
         
-        // Chuyển đổi ngày sinh nếu có
         if (!empty($data['ngaysinh'])) {
             $data['ngaysinh'] = $this->convertNgaySinh($data['ngaysinh']);
         }
         
-        // SỬA: Dùng malop thay vì lop
         $sql = "UPDATE sinhvien SET mssv=:mssv, hoten=:hoten, email=:email, 
                 gioitinh=:gioitinh, diachi=:diachi, ngaysinh=:ngaysinh, malop=:malop 
                 WHERE id=:id";
@@ -149,7 +140,7 @@ class SinhVienModel
         return ['success' => false, 'error' => 'Lỗi khi xóa sinh viên'];
     }
     
-    // Tìm kiếm sinh viên theo MSSV, Họ tên hoặc Mã lớp
+    // Tìm kiếm sinh viên (không phân trang)
     public function search($keyword)
     {
         $sql = "SELECT sv.*, lh.tenlop as tenlop 
@@ -161,6 +152,79 @@ class SinhVienModel
         return $this->db->fetchAll($sql, ['keyword' => $keyword]);
     }
     
+    // ==================== THÊM MỚI CHO COMMIT 3 ====================
+    // Tìm kiếm sinh viên có phân trang
+    public function searchPaginated($keyword, $searchBy, $offset, $limit)
+    {
+        switch ($searchBy) {
+            case 'mssv':
+                $sql = "SELECT sv.*, lh.tenlop as tenlop 
+                        FROM sinhvien sv 
+                        LEFT JOIN lophoc lh ON sv.malop = lh.malop 
+                        WHERE sv.mssv LIKE :keyword 
+                        ORDER BY sv.id DESC 
+                        LIMIT :offset, :limit";
+                break;
+            case 'hoten':
+                $sql = "SELECT sv.*, lh.tenlop as tenlop 
+                        FROM sinhvien sv 
+                        LEFT JOIN lophoc lh ON sv.malop = lh.malop 
+                        WHERE sv.hoten LIKE :keyword 
+                        ORDER BY sv.id DESC 
+                        LIMIT :offset, :limit";
+                break;
+            case 'malop':
+                $sql = "SELECT sv.*, lh.tenlop as tenlop 
+                        FROM sinhvien sv 
+                        LEFT JOIN lophoc lh ON sv.malop = lh.malop 
+                        WHERE sv.malop LIKE :keyword 
+                        ORDER BY sv.id DESC 
+                        LIMIT :offset, :limit";
+                break;
+            default:
+                $sql = "SELECT sv.*, lh.tenlop as tenlop 
+                        FROM sinhvien sv 
+                        LEFT JOIN lophoc lh ON sv.malop = lh.malop 
+                        WHERE sv.mssv LIKE :keyword 
+                           OR sv.hoten LIKE :keyword 
+                           OR sv.malop LIKE :keyword 
+                        ORDER BY sv.id DESC 
+                        LIMIT :offset, :limit";
+                break;
+        }
+        
+        $keyword = "%{$keyword}%";
+        return $this->db->fetchAll($sql, [
+            'keyword' => $keyword,
+            'offset' => (int)$offset,
+            'limit' => (int)$limit
+        ]);
+    }
+    
+    // Đếm kết quả tìm kiếm
+    public function countSearch($keyword, $searchBy = 'all')
+    {
+        switch ($searchBy) {
+            case 'mssv':
+                $sql = "SELECT COUNT(*) as total FROM sinhvien WHERE mssv LIKE :keyword";
+                break;
+            case 'hoten':
+                $sql = "SELECT COUNT(*) as total FROM sinhvien WHERE hoten LIKE :keyword";
+                break;
+            case 'malop':
+                $sql = "SELECT COUNT(*) as total FROM sinhvien WHERE malop LIKE :keyword";
+                break;
+            default:
+                $sql = "SELECT COUNT(*) as total FROM sinhvien 
+                        WHERE mssv LIKE :keyword OR hoten LIKE :keyword OR malop LIKE :keyword";
+                break;
+        }
+        
+        $keyword = "%{$keyword}%";
+        $result = $this->db->fetchOne($sql, ['keyword' => $keyword]);
+        return $result['total'] ?? 0;
+    }
+    
     // Đếm tổng số sinh viên
     public function count()
     {
@@ -169,7 +233,7 @@ class SinhVienModel
         return $result['total'] ?? 0;
     }
     
-    // Lấy danh sách có phân trang (kèm tên lớp)
+    // Lấy danh sách có phân trang
     public function getPaginated($offset, $limit)
     {
         $sql = "SELECT sv.*, lh.tenlop as tenlop 

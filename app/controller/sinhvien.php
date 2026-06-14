@@ -3,26 +3,26 @@
 
 require_once '../core/Controller.php';
 require_once '../models/SinhVienModel.php';
+require_once '../models/LopHocModel.php';
 
 class SinhVienController extends Controller
 {
     private $sinhvienModel;
+    private $lophocModel;
     
     public function __construct()
     {
         $this->sinhvienModel = new SinhVienModel();
+        $this->lophocModel = new LopHocModel();
     }
     
     // ==================== COMMIT 1: PAGING ====================
-    // Hiển thị danh sách sinh viên có phân trang
     public function index()
     {
-        // Phân trang
-        $limit = 5; // Số dòng mỗi trang
+        $limit = 5;
         $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
         $offset = ($page - 1) * $limit;
         
-        // Lấy tổng số bản ghi và danh sách theo trang
         $total = $this->sinhvienModel->getTotalCount();
         $totalPages = ceil($total / $limit);
         $sinhvienList = $this->sinhvienModel->getPaginated($offset, $limit);
@@ -35,8 +35,36 @@ class SinhVienController extends Controller
         ]);
     }
     
+    // ==================== COMMIT 3: SEARCH ====================
+    public function search()
+    {
+        $keyword = trim($_GET['keyword'] ?? '');
+        $searchBy = $_GET['search_by'] ?? 'all';
+        
+        $limit = 5;
+        $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
+        $offset = ($page - 1) * $limit;
+        
+        if (!empty($keyword)) {
+            $total = $this->sinhvienModel->countSearch($keyword, $searchBy);
+            $totalPages = ceil($total / $limit);
+            $sinhvienList = $this->sinhvienModel->searchPaginated($keyword, $searchBy, $offset, $limit);
+            
+            $this->render('sinhvien/index', [
+                'sinhvienList' => $sinhvienList,
+                'currentPage' => $page,
+                'totalPages' => $totalPages,
+                'total' => $total,
+                'keyword' => $keyword,
+                'searchBy' => $searchBy,
+                'isSearch' => true
+            ]);
+        } else {
+            $this->index();
+        }
+    }
+    
     // ==================== COMMIT 2: UPDATE ====================
-    // Hiển thị form sửa sinh viên
     public function edit($id)
     {
         $sinhvien = $this->sinhvienModel->getById($id);
@@ -45,10 +73,14 @@ class SinhVienController extends Controller
             $this->redirect('sinhvien/index');
         }
         
-        $this->render('sinhvien/edit', ['sinhvien' => $sinhvien]);
+        $lophocList = $this->lophocModel->getAll();
+        
+        $this->render('sinhvien/edit', [
+            'sinhvien' => $sinhvien,
+            'lophocList' => $lophocList
+        ]);
     }
     
-    // Xử lý cập nhật sinh viên
     public function update($id)
     {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -59,7 +91,7 @@ class SinhVienController extends Controller
                 'gioitinh' => $_POST['gioitinh'],
                 'diachi' => $_POST['diachi'],
                 'ngaysinh' => $_POST['ngaysinh'],
-                'lop' => $_POST['lop']
+                'malop' => $_POST['malop'] ?? ''
             ];
             
             $result = $this->sinhvienModel->update($id, $data);
@@ -73,8 +105,7 @@ class SinhVienController extends Controller
         $this->redirect('sinhvien/index');
     }
     
-    // ==================== COMMIT 3: DELETE ====================
-    // Xóa sinh viên
+    // ==================== DELETE ====================
     public function delete($id)
     {
         $result = $this->sinhvienModel->delete($id);
@@ -88,12 +119,13 @@ class SinhVienController extends Controller
         $this->redirect('sinhvien/index');
     }
     
-    // ==================== CREATE (Thêm mới) ====================
-    // Hiển thị form đăng ký (thêm mới)
+    // ==================== CREATE ====================
     public function dangky()
     {
         $errors = [];
         $oldData = [];
+        
+        $lophocList = $this->lophocModel->getAll();
         
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $mssv = trim($_POST['mssv'] ?? '');
@@ -102,21 +134,18 @@ class SinhVienController extends Controller
             $gioitinh = $_POST['gioitinh'] ?? '';
             $diachi = trim($_POST['diachi'] ?? '');
             $ngaysinh = trim($_POST['ngaysinh'] ?? '');
-            $lop = trim($_POST['lop'] ?? '');
+            $malop = $_POST['malop'] ?? '';
             
-            $oldData = compact('mssv', 'hoten', 'email', 'gioitinh', 'diachi', 'ngaysinh', 'lop');
+            $oldData = compact('mssv', 'hoten', 'email', 'gioitinh', 'diachi', 'ngaysinh', 'malop');
             
-            // Validate MSSV
             if (!preg_match('/^0.*68$/', $mssv)) {
                 $errors['mssv'] = "MSSV phải bắt đầu bằng 0 và kết thúc bằng 68";
             }
             
-            // Validate Email
             if (!preg_match('/@st\.huce\.edu\.vn$/', $email)) {
                 $errors['email'] = "Email phải có đuôi @st.huce.edu.vn";
             }
             
-            // Validate ngày sinh
             $dateParts = explode('/', $ngaysinh);
             if (count($dateParts) != 3) {
                 $errors['ngaysinh'] = "Ngày sinh không đúng định dạng dd/mm/yyyy";
@@ -124,7 +153,6 @@ class SinhVienController extends Controller
                 if (!checkdate($dateParts[1], $dateParts[0], $dateParts[2])) {
                     $errors['ngaysinh'] = "Ngày sinh không hợp lệ";
                 } else {
-                    // Chuyển đổi ngày sinh sang Y-m-d
                     $ngaysinh = $dateParts[2] . '-' . $dateParts[1] . '-' . $dateParts[0];
                 }
             }
@@ -137,7 +165,7 @@ class SinhVienController extends Controller
                     'gioitinh' => $gioitinh,
                     'diachi' => $diachi,
                     'ngaysinh' => $ngaysinh,
-                    'lop' => $lop
+                    'malop' => $malop
                 ];
                 
                 $result = $this->sinhvienModel->create($data);
@@ -153,11 +181,11 @@ class SinhVienController extends Controller
         
         $this->render('sinhvien/dangky', [
             'errors' => $errors,
-            'data' => $oldData
+            'data' => $oldData,
+            'lophocList' => $lophocList
         ]);
     }
     
-    // Xử lý thêm mới (có thể gọi từ dangky hoặc dùng riêng)
     public function store()
     {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -168,7 +196,7 @@ class SinhVienController extends Controller
                 'gioitinh' => $_POST['gioitinh'],
                 'diachi' => $_POST['diachi'],
                 'ngaysinh' => $_POST['ngaysinh'],
-                'lop' => $_POST['lop']
+                'malop' => $_POST['malop'] ?? ''
             ];
             
             $result = $this->sinhvienModel->create($data);
@@ -183,7 +211,6 @@ class SinhVienController extends Controller
         }
     }
     
-    // Hiển thị thông tin sau khi đăng ký
     public function trangchu()
     {
         if (!isset($_SESSION['sinhvien'])) {

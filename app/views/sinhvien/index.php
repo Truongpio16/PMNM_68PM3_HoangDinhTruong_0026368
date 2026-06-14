@@ -72,6 +72,104 @@
             margin-top: 5px;
         }
         
+        /* Search Form */
+        .search-container {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 25px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        .search-form {
+            width: 100%;
+        }
+        
+        .search-row {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        
+        .search-input-group {
+            flex: 1;
+            min-width: 150px;
+        }
+        
+        .search-select {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            font-size: 14px;
+            background: white;
+            cursor: pointer;
+        }
+        
+        .search-input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+        
+        .search-input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102,126,234,0.1);
+        }
+        
+        .btn-search {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 12px 25px;
+            border: none;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            width: 100%;
+        }
+        
+        .btn-search:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        
+        .btn-reset {
+            background: #6c757d;
+            color: white;
+            padding: 12px 25px;
+            border: none;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
+            margin-top: 10px;
+            width: 100%;
+        }
+        
+        .btn-reset:hover {
+            background: #5a6268;
+            transform: translateY(-2px);
+        }
+        
+        .search-result-info {
+            background: #e3f2fd;
+            padding: 12px 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            text-align: center;
+            color: #1565c0;
+        }
+        
         /* Button group */
         .btn-group {
             display: flex;
@@ -303,6 +401,43 @@
             </div>
         </div>
         
+        <!-- ==================== FORM TÌM KIẾM (THÊM CHO COMMIT 3) ==================== -->
+        <div class="search-container">
+            <form method="GET" action="<?php echo BASE_URL; ?>sinhvien/search" class="search-form">
+                <div class="search-row">
+                    <div class="search-input-group">
+                        <select name="search_by" class="search-select">
+                            <option value="all" <?php echo (isset($searchBy) && $searchBy == 'all') ? 'selected' : ''; ?>>🔍 Tất cả</option>
+                            <option value="mssv" <?php echo (isset($searchBy) && $searchBy == 'mssv') ? 'selected' : ''; ?>>📝 Theo MSSV</option>
+                            <option value="hoten" <?php echo (isset($searchBy) && $searchBy == 'hoten') ? 'selected' : ''; ?>>👤 Theo Họ tên</option>
+                            <option value="malop" <?php echo (isset($searchBy) && $searchBy == 'malop') ? 'selected' : ''; ?>>📚 Theo Lớp</option>
+                        </select>
+                    </div>
+                    <div class="search-input-group">
+                        <input type="text" name="keyword" class="search-input" 
+                               placeholder="Nhập từ khóa tìm kiếm..." 
+                               value="<?php echo htmlspecialchars($keyword ?? ''); ?>">
+                    </div>
+                    <div class="search-input-group">
+                        <button type="submit" class="btn-search">🔍 Tìm kiếm</button>
+                    </div>
+                </div>
+                <?php if (isset($isSearch) && $isSearch): ?>
+                    <div style="margin-top: 15px;">
+                        <a href="<?php echo BASE_URL; ?>sinhvien/index" class="btn-reset">🔄 Xóa tìm kiếm</a>
+                    </div>
+                <?php endif; ?>
+            </form>
+        </div>
+        
+        <!-- Hiển thị kết quả tìm kiếm -->
+        <?php if (isset($isSearch) && $isSearch): ?>
+            <div class="search-result-info">
+                🔎 Kết quả tìm kiếm cho: <strong>"<?php echo htmlspecialchars($keyword); ?>"</strong>
+                (Tìm thấy <strong><?php echo $total; ?></strong> kết quả)
+            </div>
+        <?php endif; ?>
+        
         <!-- Button group -->
         <div class="btn-group">
             <a href="<?php echo BASE_URL; ?>sinhvien/dangky" class="btn btn-success">➕ Thêm sinh viên</a>
@@ -335,7 +470,6 @@
                                 <span class="info-label">📚 Lớp</span>
                                 <span class="info-value">
                                     <?php 
-                                    // SỬA: Hiển thị tên lớp (tenlop) thay vì mã lớp
                                     if (!empty($sv['tenlop'])) {
                                         echo htmlspecialchars($sv['malop'] . ' - ' . $sv['tenlop']);
                                     } else {
@@ -375,18 +509,18 @@
         <?php if (isset($totalPages) && $totalPages > 1): ?>
             <div class="pagination">
                 <?php if ($currentPage > 1): ?>
-                    <a href="<?php echo BASE_URL; ?>sinhvien/index?page=<?php echo $currentPage - 1; ?>" class="page-link">«</a>
+                    <a href="<?php echo BASE_URL . (isset($isSearch) ? 'sinhvien/search?keyword=' . urlencode($keyword) . '&search_by=' . $searchBy . '&page=' . ($currentPage - 1) : 'sinhvien/index?page=' . ($currentPage - 1)); ?>" class="page-link">«</a>
                 <?php endif; ?>
                 
                 <?php for ($i = 1; $i <= $totalPages; $i++): ?>
-                    <a href="<?php echo BASE_URL; ?>sinhvien/index?page=<?php echo $i; ?>" 
+                    <a href="<?php echo BASE_URL . (isset($isSearch) ? 'sinhvien/search?keyword=' . urlencode($keyword) . '&search_by=' . $searchBy . '&page=' . $i : 'sinhvien/index?page=' . $i); ?>" 
                        class="page-link <?php echo $i == $currentPage ? 'active' : ''; ?>">
                         <?php echo $i; ?>
                     </a>
                 <?php endfor; ?>
                 
                 <?php if ($currentPage < $totalPages): ?>
-                    <a href="<?php echo BASE_URL; ?>sinhvien/index?page=<?php echo $currentPage + 1; ?>" class="page-link">»</a>
+                    <a href="<?php echo BASE_URL . (isset($isSearch) ? 'sinhvien/search?keyword=' . urlencode($keyword) . '&search_by=' . $searchBy . '&page=' . ($currentPage + 1) : 'sinhvien/index?page=' . ($currentPage + 1)); ?>" class="page-link">»</a>
                 <?php endif; ?>
             </div>
         <?php endif; ?>
