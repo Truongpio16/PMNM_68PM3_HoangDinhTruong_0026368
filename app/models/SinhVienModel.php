@@ -12,13 +12,17 @@ class SinhVienModel
         $this->db = new Database();
     }
     
-    // Lấy tất cả sinh viên (kèm tên lớp)
-    public function getAll()
+    // Lấy tất cả sinh viên (kèm tên lớp) - có sort
+    public function getAll($sortBy = 'id', $sortOrder = 'DESC')
     {
+        $allowedSortFields = ['id', 'mssv', 'hoten', 'malop'];
+        $sortBy = in_array($sortBy, $allowedSortFields) ? $sortBy : 'id';
+        $sortOrder = strtoupper($sortOrder) === 'ASC' ? 'ASC' : 'DESC';
+        
         $sql = "SELECT sv.*, lh.tenlop as tenlop 
                 FROM sinhvien sv 
                 LEFT JOIN lophoc lh ON sv.malop = lh.malop 
-                ORDER BY sv.id DESC";
+                ORDER BY sv.{$sortBy} {$sortOrder}";
         return $this->db->fetchAll($sql);
     }
     
@@ -152,17 +156,21 @@ class SinhVienModel
         return $this->db->fetchAll($sql, ['keyword' => $keyword]);
     }
     
-    // ==================== THÊM MỚI CHO COMMIT 3 ====================
+    // ==================== COMMIT 3: SEARCH ====================
     // Tìm kiếm sinh viên có phân trang
-    public function searchPaginated($keyword, $searchBy, $offset, $limit)
+    public function searchPaginated($keyword, $searchBy, $offset, $limit, $sortBy = 'id', $sortOrder = 'DESC')
     {
+        $allowedSortFields = ['id', 'mssv', 'hoten', 'malop'];
+        $sortBy = in_array($sortBy, $allowedSortFields) ? $sortBy : 'id';
+        $sortOrder = strtoupper($sortOrder) === 'ASC' ? 'ASC' : 'DESC';
+        
         switch ($searchBy) {
             case 'mssv':
                 $sql = "SELECT sv.*, lh.tenlop as tenlop 
                         FROM sinhvien sv 
                         LEFT JOIN lophoc lh ON sv.malop = lh.malop 
                         WHERE sv.mssv LIKE :keyword 
-                        ORDER BY sv.id DESC 
+                        ORDER BY sv.{$sortBy} {$sortOrder} 
                         LIMIT :offset, :limit";
                 break;
             case 'hoten':
@@ -170,7 +178,7 @@ class SinhVienModel
                         FROM sinhvien sv 
                         LEFT JOIN lophoc lh ON sv.malop = lh.malop 
                         WHERE sv.hoten LIKE :keyword 
-                        ORDER BY sv.id DESC 
+                        ORDER BY sv.{$sortBy} {$sortOrder} 
                         LIMIT :offset, :limit";
                 break;
             case 'malop':
@@ -178,7 +186,7 @@ class SinhVienModel
                         FROM sinhvien sv 
                         LEFT JOIN lophoc lh ON sv.malop = lh.malop 
                         WHERE sv.malop LIKE :keyword 
-                        ORDER BY sv.id DESC 
+                        ORDER BY sv.{$sortBy} {$sortOrder} 
                         LIMIT :offset, :limit";
                 break;
             default:
@@ -188,7 +196,7 @@ class SinhVienModel
                         WHERE sv.mssv LIKE :keyword 
                            OR sv.hoten LIKE :keyword 
                            OR sv.malop LIKE :keyword 
-                        ORDER BY sv.id DESC 
+                        ORDER BY sv.{$sortBy} {$sortOrder} 
                         LIMIT :offset, :limit";
                 break;
         }
@@ -233,15 +241,23 @@ class SinhVienModel
         return $result['total'] ?? 0;
     }
     
-    // Lấy danh sách có phân trang
-    public function getPaginated($offset, $limit)
+    // ==================== COMMIT 1: PAGING ====================
+    // Lấy danh sách có phân trang (có sort)
+    public function getPaginated($offset, $limit, $sortBy = 'id', $sortOrder = 'DESC')
     {
+        $allowedSortFields = ['id', 'mssv', 'hoten', 'malop'];
+        $sortBy = in_array($sortBy, $allowedSortFields) ? $sortBy : 'id';
+        $sortOrder = strtoupper($sortOrder) === 'ASC' ? 'ASC' : 'DESC';
+        
         $sql = "SELECT sv.*, lh.tenlop as tenlop 
                 FROM sinhvien sv 
                 LEFT JOIN lophoc lh ON sv.malop = lh.malop 
-                ORDER BY sv.id DESC 
+                ORDER BY sv.{$sortBy} {$sortOrder} 
                 LIMIT :offset, :limit";
-        return $this->db->fetchAll($sql, ['offset' => (int)$offset, 'limit' => (int)$limit]);
+        return $this->db->fetchAll($sql, [
+            'offset' => (int)$offset,
+            'limit' => (int)$limit
+        ]);
     }
     
     // Lấy tổng số bản ghi

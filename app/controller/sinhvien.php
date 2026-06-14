@@ -16,30 +16,40 @@ class SinhVienController extends Controller
         $this->lophocModel = new LopHocModel();
     }
     
-    // ==================== COMMIT 1: PAGING ====================
+    // ==================== COMMIT 1: PAGING + SORT (COMMIT 4) ====================
     public function index()
     {
+        // Lấy tham số sort
+        $sortBy = $_GET['sort_by'] ?? 'id';
+        $sortOrder = $_GET['sort_order'] ?? 'DESC';
+        
         $limit = 5;
         $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
         $offset = ($page - 1) * $limit;
         
         $total = $this->sinhvienModel->getTotalCount();
         $totalPages = ceil($total / $limit);
-        $sinhvienList = $this->sinhvienModel->getPaginated($offset, $limit);
+        $sinhvienList = $this->sinhvienModel->getPaginated($offset, $limit, $sortBy, $sortOrder);
         
         $this->render('sinhvien/index', [
             'sinhvienList' => $sinhvienList,
             'currentPage' => $page,
             'totalPages' => $totalPages,
-            'total' => $total
+            'total' => $total,
+            'sortBy' => $sortBy,
+            'sortOrder' => $sortOrder
         ]);
     }
     
-    // ==================== COMMIT 3: SEARCH ====================
+    // ==================== COMMIT 3: SEARCH + SORT (COMMIT 4) ====================
     public function search()
     {
         $keyword = trim($_GET['keyword'] ?? '');
         $searchBy = $_GET['search_by'] ?? 'all';
+        
+        // Lấy tham số sort
+        $sortBy = $_GET['sort_by'] ?? 'id';
+        $sortOrder = $_GET['sort_order'] ?? 'DESC';
         
         $limit = 5;
         $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
@@ -48,7 +58,7 @@ class SinhVienController extends Controller
         if (!empty($keyword)) {
             $total = $this->sinhvienModel->countSearch($keyword, $searchBy);
             $totalPages = ceil($total / $limit);
-            $sinhvienList = $this->sinhvienModel->searchPaginated($keyword, $searchBy, $offset, $limit);
+            $sinhvienList = $this->sinhvienModel->searchPaginated($keyword, $searchBy, $offset, $limit, $sortBy, $sortOrder);
             
             $this->render('sinhvien/index', [
                 'sinhvienList' => $sinhvienList,
@@ -57,7 +67,9 @@ class SinhVienController extends Controller
                 'total' => $total,
                 'keyword' => $keyword,
                 'searchBy' => $searchBy,
-                'isSearch' => true
+                'isSearch' => true,
+                'sortBy' => $sortBy,
+                'sortOrder' => $sortOrder
             ]);
         } else {
             $this->index();

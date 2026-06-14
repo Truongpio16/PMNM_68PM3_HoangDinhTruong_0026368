@@ -170,6 +170,45 @@
             color: #1565c0;
         }
         
+        /* Sort Container (THÊM CHO COMMIT 4) */
+        .sort-container {
+            background: white;
+            border-radius: 15px;
+            padding: 15px 20px;
+            margin-bottom: 25px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        .sort-form {
+            width: 100%;
+        }
+        
+        .sort-row {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        
+        .sort-label {
+            font-weight: 600;
+            color: #333;
+        }
+        
+        .sort-select {
+            padding: 10px 15px;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            font-size: 14px;
+            background: white;
+            cursor: pointer;
+            min-width: 150px;
+        }
+        
+        .sort-select:hover {
+            border-color: #667eea;
+        }
+        
         /* Button group */
         .btn-group {
             display: flex;
@@ -401,7 +440,7 @@
             </div>
         </div>
         
-        <!-- ==================== FORM TÌM KIẾM (THÊM CHO COMMIT 3) ==================== -->
+        <!-- ==================== FORM TÌM KIẾM ==================== -->
         <div class="search-container">
             <form method="GET" action="<?php echo BASE_URL; ?>sinhvien/search" class="search-form">
                 <div class="search-row">
@@ -437,6 +476,31 @@
                 (Tìm thấy <strong><?php echo $total; ?></strong> kết quả)
             </div>
         <?php endif; ?>
+        
+        <!-- ==================== SORT OPTIONS (THÊM CHO COMMIT 4) ==================== -->
+        <div class="sort-container">
+            <form method="GET" action="<?php echo isset($isSearch) ? BASE_URL . 'sinhvien/search' : BASE_URL . 'sinhvien/index'; ?>" class="sort-form">
+                <?php if (isset($isSearch) && $isSearch): ?>
+                    <input type="hidden" name="keyword" value="<?php echo htmlspecialchars($keyword ?? ''); ?>">
+                    <input type="hidden" name="search_by" value="<?php echo htmlspecialchars($searchBy ?? 'all'); ?>">
+                <?php endif; ?>
+                
+                <div class="sort-row">
+                    <span class="sort-label">📊 Sắp xếp theo:</span>
+                    <select name="sort_by" class="sort-select" onchange="this.form.submit()">
+                        <option value="id" <?php echo ($sortBy ?? 'id') == 'id' ? 'selected' : ''; ?>>📌 ID (Mặc định)</option>
+                        <option value="mssv" <?php echo ($sortBy ?? '') == 'mssv' ? 'selected' : ''; ?>>🎫 MSSV</option>
+                        <option value="hoten" <?php echo ($sortBy ?? '') == 'hoten' ? 'selected' : ''; ?>>👤 Họ tên</option>
+                        <option value="malop" <?php echo ($sortBy ?? '') == 'malop' ? 'selected' : ''; ?>>📚 Lớp</option>
+                    </select>
+                    
+                    <select name="sort_order" class="sort-select" onchange="this.form.submit()">
+                        <option value="DESC" <?php echo ($sortOrder ?? 'DESC') == 'DESC' ? 'selected' : ''; ?>>📉 Giảm dần (Z→A)</option>
+                        <option value="ASC" <?php echo ($sortOrder ?? '') == 'ASC' ? 'selected' : ''; ?>>📈 Tăng dần (A→Z)</option>
+                    </select>
+                </div>
+            </form>
+        </div>
         
         <!-- Button group -->
         <div class="btn-group">
@@ -509,18 +573,18 @@
         <?php if (isset($totalPages) && $totalPages > 1): ?>
             <div class="pagination">
                 <?php if ($currentPage > 1): ?>
-                    <a href="<?php echo BASE_URL . (isset($isSearch) ? 'sinhvien/search?keyword=' . urlencode($keyword) . '&search_by=' . $searchBy . '&page=' . ($currentPage - 1) : 'sinhvien/index?page=' . ($currentPage - 1)); ?>" class="page-link">«</a>
+                    <a href="<?php echo BASE_URL . (isset($isSearch) ? 'sinhvien/search?keyword=' . urlencode($keyword) . '&search_by=' . $searchBy . '&page=' . ($currentPage - 1) : 'sinhvien/index?page=' . ($currentPage - 1)); ?>&sort_by=<?php echo $sortBy ?? 'id'; ?>&sort_order=<?php echo $sortOrder ?? 'DESC'; ?>" class="page-link">«</a>
                 <?php endif; ?>
                 
                 <?php for ($i = 1; $i <= $totalPages; $i++): ?>
-                    <a href="<?php echo BASE_URL . (isset($isSearch) ? 'sinhvien/search?keyword=' . urlencode($keyword) . '&search_by=' . $searchBy . '&page=' . $i : 'sinhvien/index?page=' . $i); ?>" 
+                    <a href="<?php echo BASE_URL . (isset($isSearch) ? 'sinhvien/search?keyword=' . urlencode($keyword) . '&search_by=' . $searchBy . '&page=' . $i : 'sinhvien/index?page=' . $i); ?>&sort_by=<?php echo $sortBy ?? 'id'; ?>&sort_order=<?php echo $sortOrder ?? 'DESC'; ?>" 
                        class="page-link <?php echo $i == $currentPage ? 'active' : ''; ?>">
                         <?php echo $i; ?>
                     </a>
                 <?php endfor; ?>
                 
                 <?php if ($currentPage < $totalPages): ?>
-                    <a href="<?php echo BASE_URL . (isset($isSearch) ? 'sinhvien/search?keyword=' . urlencode($keyword) . '&search_by=' . $searchBy . '&page=' . ($currentPage + 1) : 'sinhvien/index?page=' . ($currentPage + 1)); ?>" class="page-link">»</a>
+                    <a href="<?php echo BASE_URL . (isset($isSearch) ? 'sinhvien/search?keyword=' . urlencode($keyword) . '&search_by=' . $searchBy . '&page=' . ($currentPage + 1) : 'sinhvien/index?page=' . ($currentPage + 1)); ?>&sort_by=<?php echo $sortBy ?? 'id'; ?>&sort_order=<?php echo $sortOrder ?? 'DESC'; ?>" class="page-link">»</a>
                 <?php endif; ?>
             </div>
         <?php endif; ?>
